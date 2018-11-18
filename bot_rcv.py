@@ -6,6 +6,8 @@ SRV_PT = 10000
 BUF_SZ = 1024
 
 # Set us up as a server and listen for a connection
+SRV_IP = socket.getfqdn()
+print('You are the server at: ' + SRV_IP)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SRV_IP, SRV_PT))

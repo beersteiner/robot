@@ -6,7 +6,7 @@ import socket
 # Global variables
 MSG = []
 DELAY = 0.01
-SRV_IP = '127.0.0.1'
+SRV_IP = raw_input('Enter the server ip address:')
 SRV_PT = 10000
 BUF_SZ = 1024
 
