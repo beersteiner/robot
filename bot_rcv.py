@@ -1,4 +1,6 @@
 import socket
+import sys
+import time
 
 # Global variables
 SRV_IP = '127.0.0.1'
@@ -13,15 +15,17 @@ s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SRV_IP, SRV_PT))
 s.listen(1)
 c, cli = s.accept()
+s.setblocking(0)
 
 # When connected, display client info
 print('Connected to IP: '+ cli[0] + ', port: ' + str(cli[1]))
 
 
 while True:
+    
     data = c.recv(BUF_SZ)
-    if not data: break
-    data = data.decode()
-    print(data)
-
+    if data: 
+        if data.decode() == 'q-on':
+            break
+        print(data.decode())
 c.close()
