@@ -1,14 +1,12 @@
 import pygame as pg
 import time
-import sys
-import socket
+from xbee import Xbee
 
 # Global variables
-MSG = []
 DELAY = 0.01
-SRV_IP = input('Enter the server ip address:')
-SRV_PT = 10000
-BUF_SZ = 1024
+SRV_IP = '192.168.1.118'
+SRV_PT = 9750
+K_STATE = tuple([0 for i in range(323)])
 
 class App:
     def __init__(self, s):
@@ -16,26 +14,29 @@ class App:
         self._running = True
         self._display_surf = None
         self.size = self.weight, self.height = 640,400
+
     def on_init(self):
         pg.init()
         self._display_surf = pg.display.set_mode(self.size, pg.HWSURFACE | pg.DOUBLEBUF)
         self._running = True
+
     def on_event(self, event):
-        global MSG
-        #print('e')
+        global K_STATE
         if event.type == pg.QUIT:
             self._running = False
         if event.type == pg.KEYDOWN:
-            msg = pg.key.name(event.key) + '-on'
-            self.s.send(msg.encode())
-            #MSG.append(pg.key.name(event.key))
-            #print(''.join(MSG))
+            k_tmp = pg.key.get_pressed()
+            msg = keyUpdate(K_STATE, k_tmp)
+            for m in msg: self.s.send(m.encode())
+            K_STATE = k_tmp
+            #print(msg)
         if event.type == pg.KEYUP:
-            msg = pg.key.name(event.key) + '-off'
-            self.s.send(msg.encode())
-            #MSG.remove(pg.key.name(event.key))
-            #print(''.join(MSG))
-    
+            k_tmp = pg.key.get_pressed()
+            msg = keyUpdate(K_STATE, k_tmp)
+            for m in msg: self.s.send(m.encode())
+            K_STATE = k_tmp
+            #print(msg)
+
     def on_loop(self):
         time.sleep(DELAY)
     
@@ -62,15 +63,22 @@ class App:
         self.on_cleanup()
 
 
+def keyUpdate(kold, knew):
+    res = []
+    for i in range(len(knew)):
+        if kold[i] != knew[i]:
+            res.append(pg.key.name(i)+['u','d'][knew[i]])
+    return res
+
 
 if __name__ == "__main__":
     
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((SRV_IP, SRV_PT))
+    xb = Xbee(SRV_IP, SRV_PT)
+    xb.connect()
 
-    theApp = App(s)
+    theApp = App(xb.sk)
     theApp.on_execute()
 
-    s.close()
+    xb.close()
 
 
